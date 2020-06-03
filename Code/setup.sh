@@ -2,7 +2,7 @@
 
 #The job_env will contain several packages and input files that must be present before the run and several output files that will be produced by the run. This shell script explains how the input files were sourced, downloaded and possibly wrangled before they are usable in the run...
 #All scripts should be run in the "Data" directory as they use relative paths.
-cd ~/job_env_tidy/Data
+cd ../Data
 
 #PACKAGES/SOFTWARE USED
 ##PLINK
@@ -13,18 +13,13 @@ cd ~/job_env_tidy/Data
 ##RFMIXv1.5.4 (RunRFMix.py) - used within the ancestry_pipeline run (requires Linux, run on VirtualBox Ubuntu)
 ##python2.7
 
-#INPUT DATA
-
-##VCFs and TBIs - 1KGP phased haplotype data VCF files and their index files per chromosome (GRCh37) were downloaded from the SSH server, using my login (ssh art4017@login.cx1.hpc.ic.ac.uk). This required TunnelBlick to switch to the Imperial College VPN during download. Commands (-o ServerAliveInterval=15 -o ServerAliveCountMax=3) were added in an attempt to keep the connection from becoming idle and terminating the download, although this did not work). Explicit filenames with .gz and .gz.tbi had to be specified rather than open-ended .gz* as some chr folders contained multiple copies (e.g. .gz,.gz.tbi,.gz1,.gz.tbi1).
-cd ./ssh
 lowerchr=(1) ;
 upperchr=(22) ;
-for chr in $(seq $lowerchr $upperchr); do
-    sshpass -v -p 'Artartart99' scp -o ServerAliveInterval=15 -o ServerAliveCountMax=3 art4017@login.cx1.hpc.ic.ac.uk:/rds/general/project/human-popgen-datasets/live/1000genomes_phase3/GRCh37/vcf/"${chr}"/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz . ;
-    sshpass -v -p 'Artartart99' scp -o ServerAliveInterval=15 -o ServerAliveCountMax=3 art4017@login.cx1.hpc.ic.ac.uk:/rds/general/project/human-popgen-datasets/live/1000genomes_phase3/GRCh37/vcf/"${chr}"/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.tbi . ;
-done
 
-sshpass -v -p 'Artartart99' scp -o ServerAliveInterval=15 -o ServerAliveCountMax=3 art4017@login.cx1.hpc.ic.ac.uk:/rds/general/project/human-popgen-datasets/live/1000genomes_phase3/GRCh37/vcf/4/ALL.chr4.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz . ;
+#INPUT DATA
+
+##VCFs and TBIs - 1KGP phased haplotype data VCF files and their index files per chromosome (GRCh37) were downloaded from the Imperial SSH server. This required TunnelBlick to switch to the Imperial College VPN during download. Explicit filenames with .gz and .gz.tbi had to be specified rather than open-ended .gz* as some chr folders contained multiple copies (e.g. .gz,.gz.tbi,.gz1,.gz.tbi1).
+
 
 ##AIMs - Ancestry informative markers are used in analysis to speed up the process. They were derived from two papers (Tandon, Patterson & Reich, 2015; Reich et al,. 2007). These panels (files:reich2007aims.csv,reich2015aims.xls) were downloaded from the Supplementary Materials of these studies and then wrangled (script:aims_panels_combining.R) to form a combined panel (aims_rsIDs.txt). Because the studies use different human genome builds, the rsIDs alone were extracted for compatibility to create the final panel to be used in AIMs matching during the run.
 ../Code/aims_panels_combining.R #creates aims_rsIDs.txt

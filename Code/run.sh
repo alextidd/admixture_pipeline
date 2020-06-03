@@ -21,12 +21,12 @@ upperchr=(22) ;
 ../Code/subset_populations.R ${ref_populations[@]} ALL ;
 
 #Convert the 1000 Genomes files to BCF and index.
-#echo "Converting the VCF files to BCF..."
-#mkdir bcf ;
-#for chr in $(seq $lowerchr $upperchr); do
-#    bcftools view ssh/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz -Ob --threads 4 > bcf/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf   ;
-#    bcftools index bcf/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf ;
-#done
+echo "Converting the VCF files to BCF..."
+mkdir bcf ;
+for chr in $(seq $lowerchr $upperchr); do
+    bcftools view ssh/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz -Ob --threads 4 > bcf/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf   ;
+    bcftools index bcf/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf ;
+done
 
 #Filtering. (1) Subset SAMPLES to populations of interest. (2) Filter SITES to biallelic SNPs. (3) Filter rsIDs to AIMs. (3) Index.
 echo "Filtering (populations of interest, biallelic SNPs, AIMs)..."
@@ -47,7 +47,7 @@ mkdir coverage ;
 for chr in $(seq $lowerchr $upperchr); do
     bcftools query -f '%POS\n' filtered/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf > coverage/chr"${chr}".txt ;
 done
-#../Code/coverage_karyogram.R ;
+../Code/coverage_karyogram.R ;
 
 #Generate distinct variant IDs for PLINK wrangling. Sets the ID field to a unique value: CHROM:POS:REF:ALT.
 mkdir distinct_ids
@@ -93,7 +93,7 @@ for chr in $(seq $lowerchr $upperchr); do
     --out Pruned/ALL.chr"${chr}".phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes ;
 done
 
-#Get a list of all PLINK files (had to modify the sed command from the tutorial for mac)
+#Get a list of all PLINK files
 echo "Getting a list of all PLINK files..."
 mkdir merged_plink pca
 find . -name "*.bim" | grep -e "Pruned" > ForMerge.list.temporary ;
@@ -148,7 +148,7 @@ mkdir rfmixout
 ../Code/reference_sample_map.R ${ref_populations[@]} ;
 cp filtered_"${ref_populations_prefix}"_reference_sample_map.txt ./rfmixout
 
-#Running RFMIX. --crf-weight=2 bypasses slow "Generating internal simulation samples..." step of analysis, due to low number of reference samples. Remove for the final run / with more individuals.
+#Running RFMIX.
 echo "Running RFMIX"
 for chr in $(seq $lowerchr $upperchr); do
     rfmix \
@@ -160,9 +160,7 @@ for chr in $(seq $lowerchr $upperchr); do
     --chromosome=${chr} ;
 done
 
-#Plotting the RFMIX output on karyograms and pie charts. Calculating global ancestry proportions. By summing up local ancestry proportions, global ancestry propportions can be obtained.
-echo "Plotting the RFMIX output on karyograms and global ancestry proportions on pie charts..."
-../Code/chromomap_plot.R
+#Plotting the RFMIX output on karyograms and pie charts can be done in the . Calculating global ancestry proportions. By summing up local ancestry proportions, global ancestry propportions can be obtained.
 
 
 #Setting up admixture run directories & Generating population file for supervised ADMIXTURE run (.pop file specifying the ancestries of reference individuals. Each line of thhe .pop file corresponds to an individual listed on the same line number in the .fam file. If the individual is a population reference, the .pop file line should be a string designating the population. If the individual is of unknown ancestry, use '-' to indicate that the ancestry should be estimated.
